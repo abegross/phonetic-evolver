@@ -17,27 +17,27 @@ my %aspects =
   "open"         => <a ɶ ä ä̹ ɑ ɒ>,
   #"tense"        => <i u y o>,
 
-  "voiced"       => <m ɱ n ɳ ɲ ŋ ɴ b d d ɟ g ɢ z ʒ ʐ ʑ β v ð ʝ ɣ ʁ ʕ ɦ ʋ ɹ ɻ j ɰ ⱱ ɾ ɽ ʙ r ʀ ʢ ɮ l ɫ ɭ ʎ ʟ ɺ ɥ w d̪z̪ dz d̠ʒ ɖʐ dʑ bβ b̪v d̪ð dɹ̝ d̠ɹ̠˔ ɟʝ gɣ ɢʁ ʡʢ dɮ ɟʎ̝ gʟ̝>,
-  "voiceless"    => <p t ʈ c k q ʡ ʔ s ʃ ʂ ɕ ɸ f θ ç x χ ħ h ʜ ɬ ʍ t̪s̪ ts t̠ʃ ʈʂ tɕ pɸ p̪f t̪θ tɹ̝̊ t̠ɹ̠̊˔ cç kx qχ ʔh tɬ ʈɭ̊˔ cʎ̝̊ kʟ̝̊>,
+  "voiced"       => <m ɱ n ɳ ɲ ŋ ɴ b d d ɟ g ɢ z ʒ ʐ ʑ β v ð ʝ ɣ ʁ ʕ ɦ ʋ ɹ ɻ j ɰ ⱱ ɾ ɽ ʙ r ʀ ʢ ɮ l ɫ ɭ ʎ ʟ ɺ ɥ w d̪z̪ dz dʒ d̠ʒ ɖʐ dʑ bβ b̪v d̪ð dɹ̝ d̠ɹ̠˔ ɟʝ gɣ ɢʁ ʡʢ dɮ ɟʎ̝ gʟ̝>,
+  "voiceless"    => <p t ʈ c k q ʡ ʔ s ʃ ʂ ɕ ɸ f θ ç x χ ħ h ʜ ɬ ʍ t̪s̪ ts tʃ t̠ʃ ʈʂ tɕ pɸ p̪f t̪θ tɹ̝̊ t̠ɹ̠̊˔ cç kx qχ ʔh tɬ ʈɭ̊˔ cʎ̝̊ kʟ̝̊>,
   "bilabial"     => <m̥ m p b ɸ β β̞ ⱱ̟ ʙ̥ ʙ pɸ bβ p̪f b̪v>,
   "labiodental"  => <ɱ p̪ b̪ ⱱ f v ʋ>,
   "linguolabial" => <n̼ t̼ d̼ θ̼ ð̼ ɾ̼>,
   "dental"       => <t̪ d̪ θ ð ð̞ l̪ t̪s̪ d̪z̪ t̪θ d̪ð>,
   "alveolar"     => <n̥ n t d s z θ̠ ð̠ ɹ ɾ̥ ɾ r̥ r ɬ ɮ l ɫ ɺ̥ ɺ ts dz tɹ̝̊ dɹ̝ tɬ dɮ>,
-  "postalveolar" => <ʃ ʒ ɹ̠̊˔ ɹ̠˔ ɹ̠ r̠ l̠ t̠ʃ d̠ʒ t̠ɹ̠̊˔ d̠ɹ̠˔>,
+  "postalveolar" => <ʃ ʒ ɹ̠̊˔ ɹ̠˔ ɹ̠ r̠ l̠ tʃ t̠ʃ dʒ d̠ʒ t̠ɹ̠̊˔ d̠ɹ̠˔>,
   "retroflex"    => <ɳ̊ ɳ ʈ ɖ ʂ ʐ ɻ˔ ɻ ɽ̊ ɽ ɭ̊˔ ɭ˔ ɭ ɭ̥̆ ɭ̆ ʈʂ ɖʐ ɽ̊r̥ ɽr 	ʈɭ̊˔>,
   "palatal"      => <ɲ̊ ɲ ɲ̊ ɲ ɕ ʑ ç ʝ j ʎ̝̊ ʎ̝ ʎ ʎ̆ ɥ tɕ dʑ cç ɟʝ cʎ̝̊ ɟʎ̝>,
   "velar"        => <ŋ̊ ŋ k g x ɣ ɰ ʟ̝̊ ʟ̝ ʟ ʟ̆ ɫ ʍ w kx gɣ kʟ̝̊ gʟ̝>,
   "uvular"       => <ɴ q ɢ χ ʁ ʁ̞ ʀ̥ ʀ ɢ̆ ʟ̠ qχ ɢʁ>,
   "pharyngeal"   => <ʡ ħ ʕ ʡ̆ ʜ ʢ ʡʢ>,
   "glottal"      => <ʔ h ɦ ʔ̞ ʔh>,
-  "plosive"      => <p b p̪ b̪ t̼ d̼ t̪ d̪ t d ʈ ɖ c ɟ k g q ɢ ʡ ʔ t̪s̪ d̪z̪ ts dz t̠ʃ d̠ʒ ʈʂ ɖʐ tɕ dʑ pɸ bβ p̪f b̪v t̪θ d̪ð tɹ̝̊ dɹ̝ t̠ɹ̠̊˔ d̠ɹ̠˔ cç ɟʝ kx gɣ qχ ɢʁ ʡʢ ʔh>,
+  "plosive"      => <p b p̪ b̪ t̼ d̼ t̪ d̪ t d ʈ ɖ c ɟ k g q ɢ ʡ ʔ t̪s̪ d̪z̪ ts dz tʃ t̠ʃ dʒ d̠ʒ ʈʂ ɖʐ tɕ dʑ pɸ bβ p̪f b̪v t̪θ d̪ð tɹ̝̊ dɹ̝ t̠ɹ̠̊˔ d̠ɹ̠˔ cç ɟʝ kx gɣ qχ ɢʁ ʡʢ ʔh>,
   "nasal"        => <m̥ m ɱ n̼ n̥ n ɳ̊ ɳ ɲ̊ ɲ ŋ̊ ŋ ɴ>,
   "trill"        => <ʙ̥ ʙ r̥ r r̠ ʀ̥ ʀ ʜ ʢ>,
   "tap"          => <ⱱ̟ ⱱ ɾ̼ ɾ̥ ɾ ɽ̊ ɽ ɢ̆ ʡ̆ ɺ̥ ɺ ɭ̥̆ ɭ̆ ʎ̆ ʟ̆>,
-  "fricative"    => <s z ʃ ʒ ʂ ʐ ɕ ʑ ɸ β f v θ̼ ð̼ θ ð θ̠ ð̠ ɹ̠̊˔ ɹ̠˔ ɻ˔ ç ʝ x ɣ χ ʁ ħ ʕ h ɦ ɬ ɮ ɭ̊˔ ɭ˔ ʎ̝̊ ʎ̝ ʟ̝̊ ʟ̝ t̪s̪ d̪z̪ ts dz t̠ʃ d̠ʒ ʈʂ ɖʐ tɕ dʑ pɸ bβ p̪f b̪v t̪θ d̪ð tɹ̝̊ dɹ̝ t̠ɹ̠̊˔ d̠ɹ̠˔ cç ɟʝ kx gɣ qχ ɢʁ ʡʢ ʔh>,
-  "affricate"    => <t̪s̪ d̪z̪ ts dz t̠ʃ d̠ʒ ʈʂ ɖʐ tɕ dʑ pɸ bβ p̪f b̪v t̪θ d̪ð tɹ̝̊ dɹ̝ t̠ɹ̠̊˔ d̠ɹ̠˔ cç ɟʝ kx gɣ qχ ɢʁ ʡʢ ʔh tɬ dɮ ʈɭ̊˔ cʎ̝̊ ɟʎ̝ kʟ̝̊ gʟ̝>,
-  "sibilant"     => <s z ʃ ʒ ʂ ʐ ɕ ʑ>, # t̪s̪ d̪z̪ ts dz t̠ʃ d̠ʒ ʈʂ ɖʐ tɕ dʑ>,
+  "fricative"    => <s z ʃ ʒ ʂ ʐ ɕ ʑ ɸ β f v θ̼ ð̼ θ ð θ̠ ð̠ ɹ̠̊˔ ɹ̠˔ ɻ˔ ç ʝ x ɣ χ ʁ ħ ʕ h ɦ ɬ ɮ ɭ̊˔ ɭ˔ ʎ̝̊ ʎ̝ ʟ̝̊ ʟ̝ t̪s̪ d̪z̪ ts dz tʃ t̠ʃ dʒ d̠ʒ ʈʂ ɖʐ tɕ dʑ pɸ bβ p̪f b̪v t̪θ d̪ð tɹ̝̊ dɹ̝ t̠ɹ̠̊˔ d̠ɹ̠˔ cç ɟʝ kx gɣ qχ ɢʁ ʡʢ ʔh>,
+  "affricate"    => <t̪s̪ d̪z̪ ts dz tʃ t̠ʃ dʒ d̠ʒ ʈʂ ɖʐ tɕ dʑ pɸ bβ p̪f b̪v t̪θ d̪ð tɹ̝̊ dɹ̝ t̠ɹ̠̊˔ d̠ɹ̠˔ cç ɟʝ kx gɣ qχ ɢʁ ʡʢ ʔh tɬ dɮ ʈɭ̊˔ cʎ̝̊ ɟʎ̝ kʟ̝̊ gʟ̝>,
+  "sibilant"     => <s z ʃ ʒ ʂ ʐ ɕ ʑ>, # t̪s̪ d̪z̪ ts dz tʃ t̠ʃ dʒ d̠ʒ ʈʂ ɖʐ tɕ dʑ>,
   "lateral"      => <ɬ ɮ ɭ̊˔ ɭ˔ ʎ̝̊ ʎ̝ ʟ̝̊ ʟ̝ l̪ l l̠ ɭ ʎ ʟ ʟ̠ ɺ̥ ɺ ɭ̥̆ ɭ̆ ʎ̆ ʟ̆ ɫ tɬ dɮ ʈɭ̊˔ cʎ̝̊ ɟʎ̝ kʟ̝̊ gʟ̝>,
   "approximant"  => <β̞ ʋ ð̞ ɹ ɹ̠ ɻ j ɰ ʁ̞ ʔ̞ l̪ l l̠ ɭ ʎ ʟ ʟ̠ ɥ ʍ w ɫ>,
   "click"        => <ʘ ǀ ǃ ǂ ǁ>,
@@ -258,8 +258,8 @@ for @tests1.kv -> $i,$v {
 }
 say "###########################";
 
-my @tests5 = [<k glottal>, <p voiced>, <b fricative>, <k fricative>, <s plosive>, <t affricate>, <g affricate>, <ts velar>];
-my @results5 = <ʔ b β x t ts gɣ kx>;
+my @tests5 = [<k glottal>, <p voiced>, <b fricative>, <k fricative>, <ʃ voiced>, <s plosive>, <t affricate>, <g affricate>, <ts velar>, <tʃ voiced>];
+my @results5 = <ʔ b β x ʒ t ts gɣ kx dʒ>;
 for @tests5.kv -> $i,$v {
 	#say "";
 	my $value = switch-aspect($v[0], $v[1]);

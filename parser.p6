@@ -71,7 +71,7 @@ grammar Parser {
 		<[' \w] - [_]>+
 	}
 	token geminate { 'ː' }
-	token word-break { '#' | ']word' | '[word' }
+	token word-break { '#' }
 	token no { '!' | 'not' }
 	token placeholder { '_'+ | '*'|'–'|'—' | '-'+ }
 	token empty { '∅' | 'silent' }
@@ -222,7 +222,7 @@ my @tests = [
 ];
 
 for @tests {
-	say Parser.parse($_);
+	Parser.parse($_);
 }
 for @tests {
 	my $parse = Parser.parse($_);
