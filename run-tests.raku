@@ -9,7 +9,8 @@ sub test-file($file) {
 
 	my $proc = run('raku ./ipa-chart.p6', $path, :out, :err);
 
-	is(expected($path), $proc.out.slurp, $path);
+	is(expected($path), $proc.out.slurp, $path)
+		or say $proc.err.slurp;
 }
 
 sub expected($path) {

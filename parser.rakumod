@@ -1,30 +1,28 @@
 #use Grammar::Tracer;
-use Terminal::ANSIColor;
 
 grammar Parser {
 	rule TOP {
-		[ <conversion>* <comment>? ]* %% [ '\n' | ';' ] 
+		[ <conversion>* <comment>? ]* %% [ '\n' | ';' ]
 	}
 	rule conversion {
-		<lhs=side> <becomes> <rhs=side> <when>?
+		<lhs=side> <becomes> <rhs=side> 
+		[ ['/'|'when'|'where'] <word-beg=word-break>? <when=side> <word-end=word-break>? ]?
 	}
-	rule when {
-		['/'|'when'|'where'] <side>
-	}
-	regex side { #:sigspace # allow whitespace and backtracking so that <letter> doesnt swallow <becomes>
-		<word-beg=word-break>? 
-		[ \h 
-			|| <features> 
-			|| <class> 
+
+	regex side {
+		[ \h
+			|| <features>
+			|| <class>
+			|| <jump>
 			|| <reference>
-			|| <placeholder> 
-			|| <geminate> 
-			|| <empty> 
-			|| <no> 
+			|| <placeholder>
+			|| <geminate>
+			|| <empty>
+			|| <no>
 			|| <letter>
-		]+ 
-		<word-end=word-break>? 
+		]+
 	}
+
 	rule features {
 		| <brackets>
 		| <braces>
@@ -35,7 +33,7 @@ grammar Parser {
 	rule brackets {
 		'[' ~ ']' [
 			# comma or whitespace delimited classes
-			| [ <features> || <class> || <letter> \s*?]+ 
+			| [ <features> || <class> || <letter> \s*?]+
 			| [ <features> || <class> || <letter> \s*?]+ %% ','
 		]
 	}
@@ -43,21 +41,21 @@ grammar Parser {
 	# The two expressions, ABD and AED and be written with curly braces as:
     # `A { B E } D`. A is followed by either B or E and then D.
 	rule braces {
-		| '{' ~ '}' [ <word-break> || <features> || <class> || <letter> \s*? ]+
-		| '{' ~ '}' [ <word-break> || <features> || <class> || <letter> \s*? ]+ %% ','
+		| '{' ~ '}' [ <word-break> || <side> \s*? ]+
+		| '{' ~ '}' [ <word-break> || <side> \s*? ]+ %% ','
 	}
 	# ( ) (Parenthesis): Indicate a logical-disjunction relationship of two expressions and an abbreviated version of the curly braces notation, while maintaining the same disjunctive relationship function. For example,
 	# The two expressions, ABD and AD and be written with parentheses as:
     # `A ( B ) D`, B is optionally permitted to come between A and D.
 	rule parenthesis {
-		| '(' ~ ')' [ <features> || <class> || <letter> \s*? ]+ 
+		| '(' ~ ')' [ <features> || <class> || <letter> \s*? ]+
 		| '(' ~ ')' [ <features> || <class> || <letter> \s*? ]+ %% ','
 	}
 	# ANGLED  BRACKET  NOTATION:    < >
 	# Used  with  rules  that involve dependencies between  two  feature  specifications  by  way  of adding a condition to the rule of the form
 	#“if a , then b ”
 	rule chevrons {
-		| '<' ~ '>' [ <features> || <class> || <letter> \s*? ]+ 
+		| '<' ~ '>' [ <features> || <class> || <letter> \s*? ]+
 		| '<' ~ '>' [ <features> || <class> || <letter> \s*? ]+ %% ','
 	}
 
@@ -65,15 +63,16 @@ grammar Parser {
 		<[-+]>
 	}
 	token becomes {
-		'→' | '>' | '->' | 'becomes' | 'is' | '='
+		'->' | '→' | '>' | 'becomes' | 'is' | '='
 	}
 	rule letter {
-		<[' \w] - [_]>+
+		<[' \w\h] - [\n_;]>+
 	}
 	token geminate { 'ː' }
 	token word-break { '#' }
 	token no { '!' | 'not' }
-	token placeholder { '_'+ | '*'|'–'|'—' | '-'+ }
+	token jump { '…' | '...' }
+	token placeholder { '_'+ | '*'|'–'|'—' }
 	token empty { '∅' | 'silent' }
 	token number { \d+ }
 	
@@ -161,74 +160,7 @@ grammar Parser {
 			token group:sym<length> 	{ <sym> }
 
 	rule comment {
-		'//' \N* 
+		'//' \N*
 	}
 }
 
-#say Parser.parse("u → o; lj becomes j when _#; V# > ∅");
-#my @tests = [
-	#"V# > ∅", 
-	#"'o >we", 
-	#"# we → gwe  // we becomes gwe at the beginning of words", 
-	#"pt becomes p / !_V",
-	#"l -> l̥͡l / [+consonant -voice] __",
-	#"// /t/ and /d/ are flapped when they occur after a stressed vowel and before a stressless vowel",
-	#"[stop consonant alveolar] → ɾ / [+vowel +stressed] ___ [+vowel -stressed]",
-	#'t → ∅ / !Vː_#',
-	#'t → ∅ / ! Vː _ #',
-	#'f * > 2:F -',
-	#'[vowel] # becomes silent',
-	#q{'SSS → 'S [-V] S},
-	#q{[-continuant  -voice] -> [+spread glottis] / ! s ___ [-syllabic -stress]},
-	#'[stop] → [nasal] / _ [nasal]',
-	#'[stop]  [nasal] → α:[nasal] 2',
-	#'[ʃ, ʒ, t͡ʃ, d͡ʒ] becomes [s, z, t͡s, d͡z] when _ [s, z] ',
-	#'a{be}d > acd',
-	#'x{y(z)} > acd',
-	#'x({yz}) > acd',
-	#'V → [+tense] / — {# V C{i e}V} ',
-	#'V → [-back] / ___ C₀ V[+high -back]',
-	#'V → [-back] / ___ C₀³ V[+high -back]',
-	#'V → [-back] / ___ C⁵₄ V[+high -back]',
-	#'[-anterior -continuant <-voice>] → [+coronal +strident <+anterior +continuant>] / _ [+V +S]'
-#];
-
-my @tests = [
-	# alabama 
-	"a > e", # elebeme
-	"a → e", # elebeme
-	"a > e / _b", # alebama
-	"a > e / #_", # elabama
-	'{b,m} > p', # alapapa
-	'a > e / _{b,m}', #alebema
-	'V > e / C_', # alebeme
-	'C > ∅', # aaaa
-	#to god
-	'o > e / _(C)#', # te ged
-	#to gods
-	'o > e / C₀#', # te geds
-	# burro
-	'∅ > it / _V#', # burrito
-	# ask
-	'CC > 2 1', # aks
-	#bye 
-	'X₁ > @@', # byebye
-	#baley
-	'#CVC > @@', # balbaley
-	# mitigate
-	't > d / V1 _ V1', #midigate
-	#plato
-	'∅ > C1 V1 / #_C1 C2 V1', # paplato
-];
-
-for @tests {
-	Parser.parse($_);
-}
-for @tests {
-	my $parse = Parser.parse($_);
-	if $parse {
-		say colored("OK","black on_green"), " $_";
-	} else {
-		say colored("NOT OK","white on_red"), " $_";
-	}
-}

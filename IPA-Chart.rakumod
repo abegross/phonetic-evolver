@@ -1,5 +1,6 @@
 use Terminal::ANSIColor;
-say "-----------------------------------------------";
+unit module IPA-Chart;
+
 my %aspects =
   "rounded"      => <y ʏ ø œ ɶ ʉ ɵ ə ɞ ɐ ä̹ u ʊ o ɔ ɒ>,
   "unrounded"    => <i ɪ e ɛ æ a ɨ ɘ ə ɜ ɐ ä ɯ ɤ ʌ ɑ>,
@@ -103,6 +104,11 @@ for @letters -> $letter {
 	}
 }
 #dd %letters;
+my $vowels;
+$vowels.push: |$_ for @vowel-chart;
+my $consonants = (@letters (-) $vowels).keys;
+sub vowels is export  { $vowels.cache };
+sub consonants is export { $consonants.cache };
 
 # find all aspects that are a letter is part of
 sub get-aspects($letter) {
@@ -222,46 +228,46 @@ sub clamp($value, $min, $max) {
 	return $new-value;
 }
 
-my @tests4 = [%letters{"ɬ"}.Array, <voiced velar plosive>.Array, <velar plosive>.Array, <labial velar approximant>.Array, <velar approximant>.Array, <retroflex nasal>.Array];
-my @results4 = ["ɬ", "g", <k g>, "w", <ɰ w ʍ ɫ ʟ>, <ɳ ɳ̊>];
-for @tests4.kv -> $i,$v {
-	#say "";
-	my $value = get-letter-by-aspects($v);
-	say ($value eq @results4[$i].sort) ?? colored("OK","black on_green")~" $v → $value" !! colored("NOT OK","white on_red")~" $v ≠ $value";
-}
-say "###########################";
+#my @tests4 = [%letters{"ɬ"}.Array, <voiced velar plosive>.Array, <velar plosive>.Array, <labial velar approximant>.Array, <velar approximant>.Array, <retroflex nasal>.Array];
+#my @results4 = ["ɬ", "g", <k g>, "w", <ɰ w ʍ ɫ ʟ>, <ɳ ɳ̊>];
+#for @tests4.kv -> $i,$v {
+	##say "";
+	#my $value = get-letter-by-aspects($v);
+	#say ($value eq @results4[$i].sort) ?? colored("OK","black on_green")~" $v → $value" !! colored("NOT OK","white on_red")~" $v ≠ $value";
+#}
+#say "###########################";
 
-my @tests3 = [<y close>, <o open>, <ɜ back>, <a back>, <ʊ front>, <a front>, <ɘ close>, <ɐ back>, <ə open>];
-my @results3 = <y o̞ ʌ ä ʉ̞ a ɨ̞ ɒ̝ ɜ>;
-for @tests3.kv -> $i,$v {
-	#say "";
-	my $value = move($v[0], $v[1]);
-	say ($value eq @results3[$i]) ?? colored("OK","black on_green")~" {$v[0]} → {$v[1]} = $value" !! colored("NOT OK","white on_red")~" {$v[0]} → {$v[1]} ≠ $value";
-}
-say "###########################";
+#my @tests3 = [<y close>, <o open>, <ɜ back>, <a back>, <ʊ front>, <a front>, <ɘ close>, <ɐ back>, <ə open>];
+#my @results3 = <y o̞ ʌ ä ʉ̞ a ɨ̞ ɒ̝ ɜ>;
+#for @tests3.kv -> $i,$v {
+	##say "";
+	#my $value = move($v[0], $v[1]);
+	#say ($value eq @results3[$i]) ?? colored("OK","black on_green")~" {$v[0]} → {$v[1]} = $value" !! colored("NOT OK","white on_red")~" {$v[0]} → {$v[1]} ≠ $value";
+#}
+#say "###########################";
 
-my @tests2 = [<y near-back>, <u front>, <o open>, <a back>, <ɛ central>, <a near-close>, <u unrounded>, <u close-mid>, <ʊ unrounded>, <ä rounded>, <ɐ rounded>];
-my @results2 = <ʊ y ɔ ɑ ɜ ɪ ɯ o ʊ̜ ä̹ ɐ>;
-for @tests2.kv -> $i,$v {
-	#say "";
-	my $value = switch-aspect($v[0], $v[1]);
-	say ($value eq @results2[$i]) ?? colored("OK","black on_green")~" {$v[0]} → {$v[1]} = $value" !! colored("NOT OK","white on_red")~" {$v[0]} → {$v[1]} ≠ $value";
-}
-say "###########################";
+#my @tests2 = [<y near-back>, <u front>, <o open>, <a back>, <ɛ central>, <a near-close>, <u unrounded>, <u close-mid>, <ʊ unrounded>, <ä rounded>, <ɐ rounded>];
+#my @results2 = <ʊ y ɔ ɑ ɜ ɪ ɯ o ʊ̜ ä̹ ɐ>;
+#for @tests2.kv -> $i,$v {
+	##say "";
+	#my $value = switch-aspect($v[0], $v[1]);
+	#say ($value eq @results2[$i]) ?? colored("OK","black on_green")~" {$v[0]} → {$v[1]} = $value" !! colored("NOT OK","white on_red")~" {$v[0]} → {$v[1]} ≠ $value";
+#}
+#say "###########################";
 
-my @tests1 = [%letters{"o"}.Array, <rounded front close>.Array, <unrounded central near-open open>.Array, <unrounded front close-mid>.Array];
-my @results1 = ["o", ["y", "ʏ"], "ɐ", "e"];
-for @tests1.kv -> $i,$v {
-	#say "";
-	my $value = get-letter-by-aspects($v);
-	say ($value eq @results1[$i]) ?? colored("OK","black on_green")~" $v → $value" !! colored("NOT OK","white on_red")~" $v ≠ $value";
-}
-say "###########################";
+#my @tests1 = [%letters{"o"}.Array, <rounded front close>.Array, <unrounded central near-open open>.Array, <unrounded front close-mid>.Array];
+#my @results1 = ["o", ["y", "ʏ"], "ɐ", "e"];
+#for @tests1.kv -> $i,$v {
+	##say "";
+	#my $value = get-letter-by-aspects($v);
+	#say ($value eq @results1[$i]) ?? colored("OK","black on_green")~" $v → $value" !! colored("NOT OK","white on_red")~" $v ≠ $value";
+#}
+#say "###########################";
 
-my @tests5 = [<k glottal>, <p voiced>, <b fricative>, <k fricative>, <ʃ voiced>, <s plosive>, <t affricate>, <g affricate>, <ts velar>, <tʃ voiced>];
-my @results5 = <ʔ b β x ʒ t ts gɣ kx dʒ>;
-for @tests5.kv -> $i,$v {
-	#say "";
-	my $value = switch-aspect($v[0], $v[1]);
-	say ($value eq @results5[$i]) ?? colored("OK","black on_green")~" {$v[0]} → {$v[1]} = $value" !! colored("NOT OK","white on_red")~" {$v[0]} → {$v[1]} ≠ $value";
-}
+#my @tests5 = [<k glottal>, <p voiced>, <b fricative>, <k fricative>, <ʃ voiced>, <s plosive>, <t affricate>, <g affricate>, <ts velar>, <tʃ voiced>];
+#my @results5 = <ʔ b β x ʒ t ts gɣ kx dʒ>;
+#for @tests5.kv -> $i,$v {
+	##say "";
+	#my $value = switch-aspect($v[0], $v[1]);
+	#say ($value eq @results5[$i]) ?? colored("OK","black on_green")~" {$v[0]} → {$v[1]} = $value" !! colored("NOT OK","white on_red")~" {$v[0]} → {$v[1]} ≠ $value";
+#}
