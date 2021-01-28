@@ -6,16 +6,16 @@ grammar Parser {
 	}
 	rule conversion {
 		<lhs=side> <becomes> <rhs=side> 
-		[ ['/'|'when'|'where'] <word-beg=word-break>? <when=side> <word-end=word-break>? ]?
+		[ <where> <word-beg=word-break>? <when=side> <word-end=word-break>? | <surround> <word-beg=word-break>? <sides=side> <word-end=word-break>? ]?
 	}
 
 	regex side {
-		[ \h
+		[ \h+
+			|| <placeholder>
 			|| <features>
 			|| <class>
 			|| <jump>
 			|| <reference>
-			|| <placeholder>
 			|| <geminate>
 			|| <empty>
 			|| <no>
@@ -62,11 +62,15 @@ grammar Parser {
 	token sign {
 		<[-+]>
 	}
+	token surround { '//' }
+	token where {
+		'/' | 'when' | 'where' | 'in the environment of'
+	}
 	token becomes {
 		'->' | '→' | '>' | 'becomes' | 'is' | '='
 	}
-	rule letter {
-		<[' \w\h] - [\n_;]>+
+	regex letter {
+		<[' \w] - [\n_;]>+
 	}
 	token geminate { 'ː' }
 	token word-break { '#' }
@@ -160,7 +164,7 @@ grammar Parser {
 			token group:sym<length> 	{ <sym> }
 
 	rule comment {
-		'//' \N*
+		'%%' \N*
 	}
 }
 

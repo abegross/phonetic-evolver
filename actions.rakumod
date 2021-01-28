@@ -25,6 +25,17 @@ class actions {
 		$/.make: $!word;
 	}
 
+	multi method conversion($/ where $<sides>) {
+		my $sides = $<sides>.made;
+		if $<lhs><jump> && $<rhs><jump> {
+			$/.make: metathesis($!word, $<lhs><letter>, $<rhs><letter>, before=>$<sides><letter>, after=>$<sides><letter>);
+		} else {
+			#$sides = '[' ~ $sides ~ ']?';
+			#dd $sides;
+			$/.make: replace-neighboring($!word, $<lhs>.made, $<rhs>.made, surround=>$sides);
+		}
+		$!word = $/.made if $/.made;
+	}
 	multi method conversion($/ where !$<when>) {
 		#say $<lhs>.made, $<rhs>.made;
 		if $<lhs><jump> && $<rhs><jump> {
@@ -39,15 +50,15 @@ class actions {
 		$!word = $/.made if $/.made;
 	}
 	multi method conversion($/ where $<when> && $<when><placeholder>) {
-		say $/;
+		#say $/;
 
-		say $<lhs>.made, $<rhs>.made;
+		#say $<lhs>.made, $<rhs>.made;
 		#say $/;
 		#dd replace-all($!word, $<lhs>.made, $<rhs>.made);
 		my @placeholder = $<when><placeholder>;
 		my %when = $<when>.made;
 		if $<lhs><jump> && $<rhs><jump> {
-			$/.make: metathesis($!word, $<lhs><letter>, $<rhs><letter>);
+			$/.make: metathesis($!word, $<lhs><letter>, $<rhs><letter>, before=>%when{"before"}, after=>%when{"after"}, word-beg=>$<word-beg>, word-end=>$<word-end>);
 		} else {
 			$/.make: replace($!word, $<lhs>.made, $<rhs>.made, before=>%when{"before"}, after=>%when{"after"}, word-beg=>$<word-beg>, word-end=>$<word-end>);
 		}
@@ -106,7 +117,7 @@ class actions {
 		if $<jump> {
 			for $/.caps.values {
 				my $element = .value;
-				dd $element;
+				#dd $element;
 				%side{"none"} ~= $element.made.join("") if $element.made;
 			}
 			$/.make: %side{"none"};
@@ -115,7 +126,7 @@ class actions {
 		} elsif $<placeholder> {
 			my $placeholder = $<placeholder>.from;
 			#dd $/.caps;
-			dd .value.from for $/.caps;
+			#dd .value.from for $/.caps;
 			%side{"before"} = "";
 			%side{"after"} = "";
 			for $/.caps.values {
@@ -129,12 +140,12 @@ class actions {
 			for $/.caps.values {
 				my $element = .value;
 				#dd $element;
-				%side{"none"} ~= $element.made.join("");
+				%side{"none"} ~= $element.made.join("") if $element.made;
 			}
 			$/.make: %side{"none"};
 		}
 
-		say "side→", %side;
+		#say "side→", %side;
 		#$/.make: %side;
 		#say "done letter $<letter>";
 	}
@@ -147,7 +158,7 @@ class actions {
 
 	method letter($/) {
 		$/.make: ~$/.trim.subst(/\h/, "");
-		say $/.made;
+		#say $/.made;
 	}
 	method empty($/) {
 		$/.make: "";
@@ -165,23 +176,14 @@ class actions {
 			#$/.make: "["~$<group>.made.map({"|'$_'**{$sub??$sub!!"0"}..{$sup??$sup!!"*"}"})~"]";
 		}
 	}
-	method group:sym<consonants>($/) {
-		$/.make: consonants;
-	}
-	method group:sym<vowels>($/) {
-		$/.make: vowels;
-	}
+	method group:sym<X>($/) { $/.make: '.'; }
+	method group:sym<consonants>($/) { $/.make: consonants; }
+	method group:sym<vowels>($/) { $/.make: vowels; }
 
 	method subscript($/) {
-		#my %nums = "₀"=>0,"₁"=>1,"₂"=>2,"₃"=>3,"₄"=>4,"₅"=>5,"₆"=>6,"₇"=>7,"₈"=>8,"₉"=>9;
-		#my $nums = %nums{$_} for $/.split("",:skip-empty);
-		#$/.make: +$nums;
 		$/.make: $/.trans('₀₁₂₃₄₅₆₇₈₉' => '0123456789').Int;
 	}
 	method superscript($/) {
-		#my %nums = "⁰"=>0,"¹"=>1,"²"=>2,"³"=>3,"⁴"=>4,"⁵"=>5,"⁶"=>6,"⁷"=>7,"⁸"=>8,"⁹"=>9;
-		#my $nums = %nums{$_} for $/.split("",:skip-empty);
-		#$/.make: +$nums;
 		$/.make: $/.trans('⁰¹²³⁴⁵⁶⁷⁸⁹' => '0123456789').Int;
 	}
 
@@ -204,35 +206,66 @@ class actions {
 	#}
 
 	# replace all occurrences conditionally
-	sub replace(Str $str, $from, $to, Str :$before, Str :$after, :$word-beg, :$word-end) {
+	sub replace(Str $str, $from, $to, Str :$before="", Str :$after="", :$word-beg, :$word-end) {
 		#dd [$from, $to, $after, $before, $word-beg, $word-end];
 
 		my $regex = ($after && $word-beg ?? "<?after \^ $after>" !!
-					('<?after ^>' if $word-beg) ~
+					('^' if $word-beg) ~
 					("<?after $after>" if $after)) ~
 
 					$from ~
 
 					($before && $word-end ?? "<?before $before \$>" !!
 					("<?before $before>" if $before) ~
-					('<?before $>' if $word-end));
-					#('$' if $word-end);
+					('$' if $word-end));
 		#say $regex;
 
-		return $str.subst(/<$regex>/, $to, :g);
+		my $string = $str.subst(/<$regex>/, $to||"", :g);
+		#dd $string;
+		return $string;
 	}
 
-	sub metathesis($str is rw, $from, $to, :$before="", :$after="") {
+	# replace only if theres at least one of $surround surrounding $from. a → b // c = cab→cbb, acb→abb, cac→bab, dab→dab
+	sub replace-neighboring(Str $str, $from, $to, Str :$surround, :$word-beg, :$word-end) {
+
+		my $after = $surround if $str ~~ /<$surround><$from>/; 
+		my $before = $surround if $str ~~ /<$from><$surround>/;
+		#dd [$from, $to, $before, $after, $surround, $word-beg, $word-end];
+		#dd $str ~~ /<$from><$surround>/;
+		my $regex = ('^' if $word-beg) ~
+					"[<?after $surround>?" ~ $from ~ "<?before $surround>|" ~
+					"<?after $surround>" ~ $from ~ "]"~
+					('$' if $word-end);
+		#say $regex;
+
+		my $string = $str.subst(/<$regex>/, $to||"", :g);
+		#dd $string;
+		return $string;
+	}
+
+	sub metathesis($str is rw, $from, $to, :$before="", :$after="", :$word-beg, :$word-end) {
 		die "must have 2 letters for metathesis" if $from.elems < 2;
 		die "must have 2 letters for metathesis" if $to.elems < 2;
-		#dd [$from[0].made, $from[1].made, $to[0].made, $to[1].made, $before, $after];
 		my $from0 = $from[0].made;
 		my $from1 = $from[1].made;
 		my $to0 = $to[0].made;
 		my $to1 = $to[1].made;
-		#$str ~~ s/$before$from0(<{"<-[$from0]>"}>+?.)$from1$after/$before$to0$0$to1$after/;
-		$str ~~ s/$before$from0(.+?)$from1$after/$before$to0$0$to1$after/;
-		#say "done";
+		my $negative = "<-[$from0]>";
+
+		my Str $beg = '^' if $word-beg;
+		my Str $end = '$' if $word-end;
+		my Str $left = $beg;
+		$left ~= $after if $after;
+		$left ~= $from0 if $from0;
+		my Str $right = $from1;
+		$right ~= $before if $before;
+		$right ~= $end if $end;
+		#dd [$from[0].made, $from[1].made, $to[0].made, $to[1].made, $before, $after, $beg, $end];
+		if !$word-beg {
+			$str ~~ s/<$left>(<$negative>*?.)<$right>/$after$to0$0$to1$before/;
+		} else {
+			$str ~~ s/<$left>(.+?)<$right>/$after$to0$0$to1$before/;
+		}
 		return $str;
 	}
 }

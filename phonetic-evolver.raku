@@ -34,52 +34,62 @@ use Terminal::ANSIColor;
 DOC CHECK {
 	my @tests1 = [
 		# alabama 
-		#["a > e", "elebeme"],
-		#["a → e", "elebeme"],
-		#["a → zd", "zdlzdbzdmzd"],
-		#["a -> b; l -> m", "bmbbbmb"],
-		#["a > e / _b", "alebama"],
-		#["a > e / b _", "alabema"],
-		#["a > e / a l _ b", "alebama"],
-		#["a > e / #_", "elabama"],
-		#["a > e / #_;l→m;", "emabama"],
-		#["l > e / #a _", "aeabama"],
-		#["l > e / #_a", "alabama"],
-		#["a > g / c _#", "alabama"],
-		#["a > g / _#", "alabamg"],
-		#["ba > ab ", "alaabma"],
-		#['{b,m} > p', "alapapa"],
-		#['a > e / _{b,m}', "alebema"],
-		#['V > e', "elebeme"],
-		#['C > z', "azazaza"],
-		#['V > e / C_', "alebeme"],
-		#['V > e / C_m', "alabema"],
-		#['C > ∅', "aaaa"],
+		["a > e", "elebeme"],
+		["a → e", "elebeme"],
+		["a → zd", "zdlzdbzdmzd"],
+		["a -> b; l -> m", "bmbbbmb"],
+		["a > e / _b", "alebama"],
+		["a > e / b _", "alabema"],
+		["a > e / a l _ b", "alebama"],
+		["a > e / #_", "elabama"],
+		["a > e / #_;l→m;", "emabama"],
+		["l > e / #a _", "aeabama"],
+		["l > e / #_a", "alabama"],
+		["a > g / c _#", "alabama"],
+		["a > g / _#", "alabamg"],
+		["ba > ab ", "alaabma"],
+		['{b,m} > p', "alapapa"],
+		['a > e / _{b,m}', "alebema"],
+		['V > e', "elebeme"],
+		['C > z', "azazaza"],
+		['V > e / C_', "alebeme"],
+		['V > e / C_m', "alabema"],
+		['C > ∅', "aaaa"],
+		['a→z/{l,m}_;C>∅/a_', "azbaz"],
+		["ba -> gz / la_", "alagzma"],
+		["ba -> gz / #ala_", "alagzma"],
+		["ba -> gz / #al_", "alabama"],
 		["l…b → b…l ", "abalama"],
 		["l…b → b…l / a ___ ", "abalama"],
 		["l…b → z…q ", "azaqama"],
 		["l…b → b...l / _a ", "abalama"],
+		["l…b → b...l / _b ", "alabama"],
+		["al…am → am…ab / #_", "amababa"],
 		["l…b → b...l / _ma ", "alabama"],
 		["l…a → z…q ", "azabqma"],
-		["a…b → z…q", "alzbaqa"],
+		["a…m → z…q", "alzbaqa"],
+		["a…m → z…q / #_", "zlabaqa"],
 		["a…b → z…q / #_ ", "zlaqama"],
 		["a…b → z…q / #_ ; qa -> bz/_z", "zlaqama"],
 		["a…b → z…q / #_ ; qa -> bz/_ma#", "zlabzma"],
-		["ba -> gz / #ala_", "alagzma"],
-		#["a…m → z…q / #_ ; ba -> gz / #zla _", "zlagzqa"],
-		#["al…am → am…ab / #_", "amababa"],
+		["a…m → z…q / #_ ; ba -> gz / #zla _", "zlagzqa"],
 	];
 
 	my @tests2 = [
 		#topgord
 		['o > e / _C₀', "tepgerd"],
-		['o > e / _C₀#', "tepgerd"],
-		['o > e / _C₁³', "topgerd"],
-		['o > e / _C₂', "topgerd"],
+		['o > e / _C₀#', "topgerd"],
+		['o > e / _C₁³', "tepgerd"],
+		['o > e / _C³₁', "tepgerd"],
+		['o > e / _C₂', "tepgerd"],
 		['o > e / _C₂#', "topgerd"],
 		['o > e / _C₃', "topgord"],
-		['o > e / _C₀g', "tepgerd"],
+		['o > e / _C₀g', "tepgord"],
 		['o > e / _C₀d', "topgerd"],
+		['o > e // g', "topgerd"],
+		['p>g;o > e // g', "teggerd"],
+		['r > g // d #', "topgogd"],
+		['r > g // z #', "topgord"],
 		#'o > e / _(C)#', "tepgerd",
 		##to gods
 		#'o > e / C₀#', # te geds
@@ -98,7 +108,7 @@ DOC CHECK {
 	];
 
 	run-test("alabama", @tests1);
-	#run-test("topgord", @tests2);
+	run-test("topgord", @tests2);
 
 	sub run-test($word, @tests) {
 		say "#####################################";
@@ -113,3 +123,5 @@ DOC CHECK {
 		}
 	}
 }
+
+#say Parser.parse("l…b → b...l / _ma ");
