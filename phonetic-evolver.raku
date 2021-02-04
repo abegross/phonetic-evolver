@@ -1,6 +1,7 @@
 use lib ".";
 use parser;
 use actions;
+#use evaluator;
 use Terminal::ANSIColor;
 
 #say Parser.parse("u → o; lj becomes j when _#; V# > ∅");
@@ -31,20 +32,20 @@ use Terminal::ANSIColor;
 	#'[-anterior -continuant <-voice>] → [+coronal +strident <+anterior +continuant>] / _ [+V +S]'
 #];
 
-DOC CHECK {
+#DOC CHECK {
 	my @tests1 = [
 		# alabama 
 		["a > e", "elebeme"],
 		["a → e", "elebeme"],
 		["a → zd", "zdlzdbzdmzd"],
 		["a -> b; l -> m", "bmbbbmb"],
-		["a > e / _b", "alebama"],
+		["a > e / _ b", "alebama"],
 		["a > e / b _", "alabema"],
 		["a > e / a l _ b", "alebama"],
 		["a > e / #_", "elabama"],
 		["a > e / #_;l→m;", "emabama"],
 		["l > e / #a _", "aeabama"],
-		["l > e / #_a", "alabama"],
+		["l > e / #_ a", "alabama"],
 		["a > g / c _#", "alabama"],
 		["a > g / _#", "alabamg"],
 		["ba > ab ", "alaabma"],
@@ -52,13 +53,11 @@ DOC CHECK {
 		['a > e / _{b,m}', "alebema"],
 		['V > e', "elebeme"],
 		['C > z', "azazaza"],
-		['V > e / C_', "alebeme"],
-		['V > e / C_m', "alabema"],
-		['C > ∅', "aaaa"],
-		['a→z/{l,m}_;C>∅/a_', "azbaz"],
-		["ba -> gz / la_", "alagzma"],
-		["ba -> gz / #ala_", "alagzma"],
-		["ba -> gz / #al_", "alabama"],
+		['V > e / C _', "alebeme"],
+		['V > e / C _ m', "alabema"],
+		["ba -> gz / la _", "alagzma"],
+		["ba -> gz / #ala _", "alagzma"],
+		["ba -> gz / #al _", "alabama"],
 		["l…b → b…l ", "abalama"],
 		["l…b → b…l / a ___ ", "abalama"],
 		["l…b → z…q ", "azaqama"],
@@ -73,32 +72,50 @@ DOC CHECK {
 		["a…b → z…q / #_ ; qa -> bz/_z", "zlaqama"],
 		["a…b → z…q / #_ ; qa -> bz/_ma#", "zlabzma"],
 		["a…m → z…q / #_ ; ba -> gz / #zla _", "zlagzqa"],
+		['C > ∅', "aaaa"],
+		['a→z/{l,m} _;C>∅/a _', "azbaz"],
 	];
 
 	my @tests2 = [
 		#topgord
-		['o > e / _C₀', "tepgerd"],
-		['o > e / _C₀#', "topgerd"],
-		['o > e / _C₁³', "tepgerd"],
-		['o > e / _C³₁', "tepgerd"],
-		['o > e / _C₂', "tepgerd"],
-		['o > e / _C₂#', "topgerd"],
-		['o > e / _C₃', "topgord"],
-		['o > e / _C₀g', "tepgord"],
-		['o > e / _C₀d', "topgerd"],
-		['o > e // g', "topgerd"],
+		['o > e / _ C₀', "tepgerd"],
+		['o > e / _ C₀#', "topgerd"],
+		['o > e / _ C₁³', "tepgerd"],
+		['o > e / _ C³₁', "tepgerd"],
+		['o > e / _ C₂', "tepgerd"],
+		['o > e / _ C₂#', "topgerd"],
+		['o > e / _ C₃', "topgord"],
+		['o > e / _ C₀g', "tepgord"],
+		['o > e / _ C₀d', "topgerd"],
+		['o > e // g', "topgerd"], # when neighboring 'g'
 		['p>g;o > e // g', "teggerd"],
 		['r > g // d #', "topgogd"],
 		['r > g // z #', "topgord"],
-		#'o > e / _(C)#', "tepgerd",
-		##to gods
-		#'o > e / C₀#', # te geds
-		## burro
-		#'∅ > it / _V#', # burrito
+		['o > e / X₂_', "topgerd"], # when preceded by 2 of anything
+		['o > e / _ (p)', "tepgerd"],
+		['o > e / _(C)', "tepgerd"],
+		['o > e / _(C)#', "topgord"],
+		['o > e / _(CC)#', "topgerd"],
+		['o > e / _(C)(C)#', "topgerd"],
+		['∅ > at / #C_', "tatopgord"],
+	];
+
+	my @tests3 = [
+		["N > z", "zztʰaz"],
+		["[+nasal] > z", "zztʰaz"],
+		["[+stop] > z", "nãzʰaŋ"],
+		["n > [+stop]", "dãtʰaŋ"],
+		["ŋ → g; n > [+stop]", "dãtʰag"],
+		#["[+aspirated] > z", "nãzaŋ"],
+		["[+nasal] > [+stop]", "dãtʰag"],
+		["[+nasal] > [+stop] / _#", "nãtʰag"],
+	];
+
+	my @tests4 = [
+		['CC > 2 1', "togpodr"],
+		['X₁ > @@', "topgordtopgord"],
 		## ask
-		#'CC > 2 1', # aks
 		##bye 
-		#'X₁ > @@', # byebye
 		##baley
 		#'#CVC > @@', # balbaley
 		## mitigate
@@ -107,14 +124,19 @@ DOC CHECK {
 		#'∅ > C1 V1 / #_C1 C2 V1', # paplato
 	];
 
-	run-test("alabama", @tests1);
-	run-test("topgord", @tests2);
+	#run-test("alabama", @tests1);
+	#run-test("topgord", @tests2);
+	run-test("nãtʰaŋ", @tests3);
+	run-test("topgord", @tests4);
 
 	sub run-test($word, @tests) {
 		say "#####################################";
 		say $word;
 		for @tests -> $test {
-			my $parse = Parser.parse($test[0], actions=>actions.new(word=>$word));
+			my $parse = Parser.parse($test[0], actions=>Actions.new(word=>$word));
+			#my $eval = Evaluator.new(word=>$word);
+			#$eval.eval($parse.made);
+			#say $parse;
 			if $parse.made eq $test[1] {
 				say colored("OK","black on_green"), " $parse = $test[1]";
 			} else {
@@ -122,6 +144,6 @@ DOC CHECK {
 			}
 		}
 	}
-}
+#}
 
 #say Parser.parse("l…b → b...l / _ma ");

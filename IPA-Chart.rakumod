@@ -1,7 +1,6 @@
 use Terminal::ANSIColor;
-unit module IPA-Chart;
 
-my %aspects =
+our %aspects is export =
   "rounded"      => <y ʏ ø œ ɶ ʉ ɵ ə ɞ ɐ ä̹ u ʊ o ɔ ɒ>,
   "unrounded"    => <i ɪ e ɛ æ a ɨ ɘ ə ɜ ɐ ä ɯ ɤ ʌ ɑ>,
   "front"        => <i y i̞ y̞ e ø e̞ ø̞ ɛ œ æ æ̹ a ɶ>,
@@ -46,6 +45,37 @@ my %aspects =
   "labial"       => <ɥ w>,
   ;
 
+my %diacritics = 
+	"nasal" 			=> "\c[COMBINING TILDE]",
+	"voiceless" 		=> "\c[COMBINING RING BELOW]",
+	"voiced" 			=> "\c[COMBINING CARON BELOW]",
+	"breathy" 			=> "\c[COMBINING DIAERESIS BELOW]",
+	"creaky" 			=> "\c[COMBINING TILDE BELOW]",
+	"dental" 			=> "\c[COMBINING BRIDGE BELOW]",
+	"apical" 			=> "\c[COMBINING INVERTED BRIDGE BELOW]",
+	"linguolabial" 		=> "\c[COMBINING SEAGULL BELOW]",
+	"laminal" 			=> "\c[COMBINING SQUARE BELOW]",
+	"advanced" 			=> "\c[COMBINING PLUS SIGN BELOW]",
+	"retracted" 		=> "\c[COMBINING MINUS SIGN BELOW]",
+	"centralized" 		=> "\c[COMBINING DIAERESIS]",
+	"mid-centralized"	=> "\c[COMBINING X ABOVE]",
+	"raised" 			=> "\c[COMBINING UP TACK BELOW]",
+	"lowered" 			=> "\c[COMBINING DOWN TACK BELOW]",
+	"rounded" 			=> "\c[COMBINING RIGHT HALF RING BELOW]",
+	"unrounded" 		=> "\c[COMBINING LEFT HALF RING BELOW]",
+	"aspirated" 		=> "\c[MODIFIER LETTER SMALL H]",
+	"labial" 			=> "\c[MODIFIER LETTER SMALL W]",
+	"palatal" 			=> "\c[MODIFIER LETTER SMALL J]",
+	"velar" 			=> "\c[MODIFIER LETTER SMALL GAMMA]",
+	"pharyngeal" 		=> "\c[MODIFIER LETTER SMALL REVERSED GLOTTAL STOP]",
+	"front" 			=> "\c[COMBINING LEFT TACK BELOW]",
+	"back" 				=> "\c[COMBINING RIGHT TACK BELOW]",
+	"rhotic" 			=> "\c[MODIFIER LETTER RHOTIC HOOK]",
+	"long" 				=> "\c[MODIFIER LETTER TRIANGULAR COLON]",
+	"short" 			=> "\c[MODIFIER LETTER HALF TRIANGULAR COLON]",
+	"extra-short" 		=> "\c[COMBINING BREVE]",
+	;
+
 my @vowel-chart = [
 	%aspects{"close"},
 	%aspects{"near-close"},
@@ -89,7 +119,7 @@ my @exclusive = (
 	
 	<voiced voiceless>, # voicedness
 	<labial coronal dorsal laryngeal bilabial linguolabial dental alveolar postalveolar retroflex palatal velar uvular pharyngeal glottal>, # place
-	<nasal plosive sibilant fricative approximant tap trill lateral>, # manner
+	<nasal plosive sonorant sibilant fricative approximant tap trill lateral>, # manner
 	["affricate"],
 );
 
@@ -111,25 +141,47 @@ sub vowels is export  { $vowels.cache };
 sub consonants is export { $consonants.cache };
 
 # find all aspects that are a letter is part of
-sub get-aspects($letter) {
+sub get-aspects($letter) is export {
 	return %letters{$letter};
 }
 
 # find all letters that fit a given aspect
-sub get-letters($aspect) {
+multi sub get-letters($aspect) {
 	my @letters;
 	for %aspects.kv -> $name,@ltrs {
 		#say @ltrs;
 		@letters.push(|@ltrs) if $aspect eq $name;
 	}
+
+	for %diacritics.keys -> $diacritic {
+		@letters.push: %diacritics{$diacritic}	if $aspect eq $diacritic;
+	}
+
 	return @letters;
 }
+#say get-letters("nasal");
+
+# figure out which letters in a str includes a given aspect (including diacritics)
+multi sub get-letters($str, $aspect) is export {
+	return consonants if $aspect eq 'consonants';
+	return vowels if $aspect eq 'vowels';
+	my @letters = get-letters($aspect);
+	my @matched = $str.split("",:skip-empty).map: {any(.NFKD.map: {.chr ∈ @letters})};
+	my @returns;
+	for $str.split("",:skip-empty) Z @matched -> [$letter, $match] {
+		@returns.push: $letter if $match;
+	}
+	return @returns;
+}
+
+#say switch-aspect("n", "plosive");
 
 # switch the aspect of a letter from one to another
 #say switch-aspect("ɛ", "close"); # returns "i" cuz theyre both front unrounded
-sub switch-aspect($letter, $to-aspect) {
+sub switch-aspect($letter, $to-aspect) is export {
 	my @to-aspect = $to-aspect.Array;
 	my $my-aspects = get-aspects($letter); #?? %letters{$letter} !! %consonants{$letter};
+	return Nil if !$my-aspects;
 	for @exclusive -> @ex {
 		#say $my-aspects, @ex, " ", @to-aspect;
 		# if $to-aspect is in @ex
@@ -152,18 +204,21 @@ sub switch-aspect($letter, $to-aspect) {
 			}
 			# return the letter that addition of the set-intersection of the aspects is
 			#say $my-aspects, @ex, @to-aspect;
-			#dd @to-aspect, ($my-aspects (-) @ex)[0].keys, (($my-aspects (-) @ex) ∪ @to-aspect).keys;
+			#dd @to-aspect, ($my-aspects (-) @ex).keys, (($my-aspects (-) @ex) ∪ @to-aspect).keys;
 			#dd (($my-aspects (-) @ex) ∪ @to-aspect).keys;
 			my $new-letter = get-letter-by-aspects((($my-aspects (-) @ex) ∪ @to-aspect).keys.Array);
-			$new-letter = $letter ~ "\x0339" if not $new-letter and @to-aspect ∋ "rounded";
-			$new-letter = $letter ~ "\x031C" if not $new-letter and @to-aspect ∋ "unrounded";
+
+			for %diacritics.keys -> $diacritic {
+				$new-letter = $letter ~ %diacritics{$diacritic}	if not $new-letter and @to-aspect ∋ $diacritic;
+			}
+
 			return $new-letter;
 		}
 	}
 }
 
 
-sub get-letter-by-aspects(@aspects where @aspects ~~ Array) {
+sub get-letter-by-aspects(@aspects where @aspects ~~ Array) is export {
 	my @sets.push: %aspects{($_ ~~ Pair ?? $_.key !! $_)} for @aspects;
 	#say "top", @aspects, [∩] @sets;
 	@sets = |([∩] @sets.sort).keys.sort.Array;
@@ -176,12 +231,16 @@ sub get-letter-by-aspects(@aspects where @aspects ~~ Array) {
 		}
 	}
 	if @sets ~~ Array {
-		#dd @sets;
+		#dd @sets.elems;
 		if @aspects ∌ "affricate" {
-			for @sets {
-				#dd @aspects, $_, get-aspects($_);
-				cut(@sets, $_) if get-aspects($_) ∋ "affricate";
+			my @temp;
+			for @sets.kv -> $k, $_ {
+				#dd $k, $_, get-aspects($_);
+				#cut(@sets, $_) if get-aspects($_) ∋ "affricate";
+				@temp.push: $_ if get-aspects($_) ∌ "affricate";
+				#dd @sets;
 			}
+			@sets = @temp;
 		}
 		#dd @aspects;
 		return @sets;
@@ -192,7 +251,7 @@ sub get-letter-by-aspects(@aspects where @aspects ~~ Array) {
 	die "{@aspects} is not a real letter";
 }
 
-sub move($letter, $dir where "close" | "open" | "front" | "back") {
+sub move($letter, $dir where "close" | "open" | "front" | "back") is export {
 	##return "∅" if $dir ne "up" | "down" | "right" | "left";
 
 	my ($x, $y, $max-x, $max-y, $v-elems);
@@ -264,8 +323,8 @@ sub clamp($value, $min, $max) {
 #}
 #say "###########################";
 
-#my @tests5 = [<k glottal>, <p voiced>, <b fricative>, <k fricative>, <ʃ voiced>, <s plosive>, <t affricate>, <g affricate>, <ts velar>, <tʃ voiced>];
-#my @results5 = <ʔ b β x ʒ t ts gɣ kx dʒ>;
+#my @tests5 = [<k glottal>, <p voiced>, <b fricative>, <k fricative>, <ʃ voiced>, <s plosive>, <t affricate>, <g affricate>, <ts velar>, <tʃ voiced>, <n plosive>, <ŋ plosive>];
+#my @results5 = <ʔ b β x ʒ t ts gɣ kx dʒ d g>;
 #for @tests5.kv -> $i,$v {
 	##say "";
 	#my $value = switch-aspect($v[0], $v[1]);

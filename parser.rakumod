@@ -6,7 +6,11 @@ grammar Parser {
 	}
 	rule conversion {
 		<lhs=side> <becomes> <rhs=side> 
-		[ <where> <word-beg=word-break>? <when=side> <word-end=word-break>? | <surround> <word-beg=word-break>? <sides=side> <word-end=word-break>? ]?
+		[ <where> <word-beg=word-break>?
+			#[<preceded=side>? <placeholder> <followed=side> || <preceded=side> <placeholder> || <placeholder>]
+			<when=side>
+		<word-end=word-break>? 
+		| <surround> <word-beg=word-break>? <sides=side> <word-end=word-break>? ]?
 	}
 
 	regex side {
@@ -21,6 +25,8 @@ grammar Parser {
 			|| <no>
 			|| <letter>
 		]+
+
+
 	}
 
 	rule features {
@@ -48,8 +54,8 @@ grammar Parser {
 	# The two expressions, ABD and AD and be written with parentheses as:
     # `A ( B ) D`, B is optionally permitted to come between A and D.
 	rule parenthesis {
-		| '(' ~ ')' [ <features> || <class> || <letter> \s*? ]+
-		| '(' ~ ')' [ <features> || <class> || <letter> \s*? ]+ %% ','
+		| '(' ~ ')' [ <word-break> || <side> \s*? ]+
+		| '(' ~ ')' [ <word-break> || <side> \s*? ]+ %% ','
 	}
 	# ANGLED  BRACKET  NOTATION:    < >
 	# Used  with  rules  that involve dependencies between  two  feature  specifications  by  way  of adding a condition to the rule of the form
@@ -64,13 +70,13 @@ grammar Parser {
 	}
 	token surround { '//' }
 	token where {
-		'/' | 'when' | 'where' | 'in the environment of'
+		'/' | 'when' | 'where'
 	}
 	token becomes {
 		'->' | '→' | '>' | 'becomes' | 'is' | '='
 	}
 	regex letter {
-		<[' \w] - [\n_;]>+
+		<['\h\w] - [\n_;]>+ [ <syllable> <[' \w] - [\n_;]>+ ]*
 	}
 	token geminate { 'ː' }
 	token word-break { '#' }
@@ -79,6 +85,7 @@ grammar Parser {
 	token placeholder { '_'+ | '*'|'–'|'—' }
 	token empty { '∅' | 'silent' }
 	token number { \d+ }
+	token syllable { '.' | '$' }
 	
 	token reference {
 		| [\d+ | <[αβγδεζηθικλμνξοπρςτυφχψω]> ] [ ':' [ <class> | <features> ] ]?
@@ -168,3 +175,7 @@ grammar Parser {
 	}
 }
 
+#say Parser.parse('a → e / _ b');
+#say Parser.parse('a → e / b _');
+#say Parser.parse('a → e / # _');
+#say Parser.parse('{b,m} → p');
