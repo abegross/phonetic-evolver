@@ -1,4 +1,5 @@
 use IPA-Chart;
+use Terminal::ANSIColor;
 use MONKEY;
 
 ############################
@@ -19,8 +20,7 @@ class Actions {
 	method TOP($/) {
 		#say $/;
 		$!word = $<conversion>[*-1].made ?? $<conversion>[*-1].made !! $!word;
-		#say $<conversion>».made;
-		#say $!word;
+		#say $<conversion>».made; #say $!word;
 		$/.make: $!word;
 	}
 
@@ -61,56 +61,18 @@ class Actions {
 		} else {
 			$/.make: replace($!word, $<lhs>.made, $<rhs>.made, before=>%when{"before"}, after=>%when{"after"}, word-beg=>$<word-beg>, word-end=>$<word-end>);
 		}
-		#%letters{"letter"} = $<when><letter> if $<when><letter>;
-		#%letters{"features"} = $<when><features> if $<when><features>;
-		#%letters{"class"} = $<when><class> if $<when><class>;
-		#dd @placeholder;
-		#say %letters;
-		#if %letters {
-			## if the placeholder is before a letter 
-			#if %letters{"letter"}[0].from ≥ 0 and @placeholder[0].from < %letters{"letter"}[0].from {
-				#if $<word-beg> and $!word.starts-with($<lhs>.made) and $<lhs><jump> && $<rhs><jump> {
-					#$/.make: metathesis($!word, $<lhs><letter>, $<rhs><letter>);
-				#} elsif $<lhs><jump> && $<rhs><jump> {
-						#$/.make: metathesis($!word, $<lhs><letter>, $<rhs><letter>, before=>%letters{"letter"}[0].made);
-					#} else {
-						##say "here";
-						#$/.make: replace($!word, $<lhs>.made, $<rhs>.made, before=>%letters{"letter"}[0].made, word-beg=>$<word-beg>, word-end=>$<word-end>);
-					#}
-			## if the placeholder is after a letter 
-			#} elsif @placeholder[0].from > %letters{"letter"}[0].from {
-				#if $<lhs><jump> && $<rhs><jump> {
-					#$/.make: metathesis($!word, $<lhs><letter>, $<rhs><letter>, after=>%letters{"letter"}[0].made);
-				#} else  {
-					##$/.make: _s($!word, $<lhs>.made, $<rhs>.made, %letters{"letter"}[0].made);
-					#$/.make: replace($!word, $<lhs>.made, $<rhs>.made, after=>%letters{"letter"}[0].made);
-				#}
-			#} else {
-				#if $<lhs><jump> && $<rhs><jump> {
-					#$/.make: metathesis($!word, $<lhs><letter>, $<rhs><letter>, before=>%letters{"letter"}[0].made, after=>%letters{"letter"}[1].made);
-				#} else  {
-					##$/.make: _s_($!word, $<lhs>.made, $<rhs>.made, %letters{"letter"}[0].made, %letters{"letter"}[1].made);
-					#$/.make: replace($!word, $<lhs>.made, $<rhs>.made, after=>%letters{"letter"}[0].made, before=>%letters{"letter"}[1].made);
-				#}
-			#}
-		#} else {
-			#if $<lhs><jump> && $<rhs><jump> {
-				#if ($<word-beg> and $!word.starts-with($<lhs>.made[0])) or
-					#($<word-end> and $!word.ends-with($<lhs>.made[0])) {
-					##say "here";
-					#$/.make: metathesis($!word, $<lhs><letter>, $<rhs><letter>);
-				#}
-			#} else  {
-				#$/.make: replace($!word, $<lhs>.made, $<rhs>.made, word-beg=>$<word-beg>, word-end=>$<word-end>);
-			#}
-		#}
 		#say "making $/";
 		$!word = $/.made if $/.made;
 		#say "made $!word";
 	}
 
 	method side($/) {
-		die "only one placeholder allowed in the when block $/" if $<placeholder> and $<placeholder>.elems > 1;
+		say $/;
+		# first quit program if there are any errors
+		if rhs($/) {
+			error($/, 'braces not allowed in right hand side') if $<features>[0]<braces>;
+		}
+		error($/, "only one placeholder allowed in the when side") if $<placeholder> and $<placeholder>.elems > 1;
 
 		my %side;
 		if $<jump> {
@@ -178,22 +140,29 @@ class Actions {
 
 	method reference($/) {
 		if $/ eq '@' {
-			$/.make: '~$/.orig';
+			$/.make: '~$/';
 		} else {
-			$/.make: '~$/.split("",:skip-empty)[' ~ (+$/ - 1)~']';
+			$/.make: '~$/.split("",:skip-empty)[' ~ (+$<number> - 1)~']';
+			if $<class> {
+				#$/.make: 'get-letters'
+			}
 		}
 		#say $/.made;
 	}
 
 	method class($/) {
 		#dd $/;
-		#say "made:" , $<group>.made;
+		say "made:" , $<group>.made;
 		if !rhs($/) {
-			$<group>.make: get-letters($!word, $<group>.made)||$<group>.made if $<group>;
-		#} else {
-			#$<group>.make: switch-aspect("n", $<group>.made) if $<group>;
+			#say '!rhs';
+			# if the sign on a class is a negative
+			if $<sign> && $<sign> eq '-' {
+				$<group>.make: get-letters-negative($!word, $<group>.made)||$<group>.made if $<group>;
+			} else {
+				$<group>.make: get-letters($!word, $<group>.made)||$<group>.made if $<group>;
+			}
 		}
-		#say "made:" , $<group>.made;
+		say "made:" , $<group>.made;
 		my ($before, $after, $join) = ("","","");
 		if !rhs($/) {
 			$before = "[";
@@ -201,6 +170,10 @@ class Actions {
 			$join   = "'|'";
 			$after  = "]";
 			$after  = "']"  if $<group>.made ne '.';
+		}
+
+		if $<number> {
+			$<group>
 		}
 
 		#dd [rhs($/), $before, $join, $after];
@@ -256,7 +229,8 @@ class Actions {
 		method group:sym<back>($/) 	{$/.make("back");}
 		method group:sym<center>($/) 	{ $/.make("center"); }
 		method group:sym<front>($/) 	{$/.make("front");}
-	method group:sym<round>($/) 	{ $/.make("round"); }
+	method group:sym<rounded>($/) 	{ $/.make("rounded"); }
+	method group:sym<unrounded>($/) 	{ $/.make("unrounded"); }
 	method group:sym<distributed>($/) 	{ $/.make("distributed"); }
 	method group:sym<covered>($/) 	{ $/.make("covered"); }
 	method group:sym<glottal>($/) 	{$/.make("glottal");}
@@ -273,7 +247,8 @@ class Actions {
 	method group:sym<ejective>($/) 	{ $/.make("ejective"); }
 	method group:sym<tense>($/) 	{ $/.make("tense"); }
 	#source features
-	method group:sym<voice>($/) 	{ $/.make("voice"); }
+	method group:sym<voiced>($/) 	{ $/.make("voiced"); }
+	method group:sym<voiceless>($/) 	{ $/.make("voiceless"); }
 	method group:sym<strident>($/) 	{ $/.make("strident"); }
 		#prosodic features
 		method group:sym<stress>($/) 	{ $/.make("stress"); }
@@ -308,15 +283,22 @@ class Actions {
 	sub rhs($this) {
 		# make variables to figure out where we are in the regex
 		my $self = $this.from;
-		my $left = find-index($this.orig, /<[→>=]>|'->'|'is'|'becomes'/);
-		my $when = find-index($this.orig, /'/'|'when'|'where'/);
+		my $str = $this.orig.substr(($this.orig.rindex(';', $self)||0)..*) || $this.orig;
+		$self -= ($this.orig.rindex(';', $self)||0);
+		my $left = find-index($str, /<[→>=]>|'->'|'=>'|'is'|'becomes'/);
+		my $when = find-index($str, /'/'|'when'|'where'/);
 		# make $rhs = True if we're currently on the right hand side of the equation
 		my Bool $rhs = True if $self > $left && ($when?? $self < $when !! True);
 		return $rhs;
 	}
 
-	sub find-index($str, $regex) {
+	sub find-index(Str $str, Regex $regex) {
 		return $str.match($regex).from;
+	}
+
+	sub error(Match $/, Str $message) {
+		say "$message:\n{colored($/.prematch, 'green')}{colored('⏏','yellow')}{colored($/.Str, 'red')}{$/.postmatch}";
+		exit;
 	}
 
 	## if there needs to be a letter surrounding the placeholder
@@ -336,9 +318,12 @@ class Actions {
 		#my $to = S:g/<[()]>// given $to-temp||"";
 		my $to = $to-temp||"";
 		my $string = $str;
-		#dd [$string, $from, $to, $after, $before, $word-beg, $word-end];
+		dd [$string, $from, $to, $after, $before, $word-beg, $word-end];
 
 		my $dest = '';
+		# im only doing EVAL cuz i couldnt come up with something better.
+		# i would really appreciate a pull request on this
+		my sub dest($/) { my $to = EVAL($dest); return $to }
 		my %ltrs;
 		#say %aspects{S:g/<[()]>// given $to}:exists;
 		if %aspects{S:g/<[()]>// given $to}:exists {
@@ -348,10 +333,12 @@ class Actions {
 			#}
 			#dd $string;
 
-			my $destination = (S:g/<[()[\]'|]>// given $from).split('',:skip-empty).map({%ltrs{$_} = switch-aspect($_, (S:g/<[()]>// given $to))});
-			say $destination;
+			#dd (S:g/<[()[\]'|]>// given $from).split('',:skip-empty);
+			$dest = $from.split('|').map({S:g/<[()[\]']>// given $_}).map({%ltrs{$_} = switch-aspect($_, (S:g/<[()]>// given $to))||''});
+			S/.// given $dest;
+			#dd $dest;
 
-			for (S:g/<[()[\]'|]>// given $from).split('',:skip-empty) {
+			for $from.split('|').map({S:g/<[()[\]']>// given $_}) {
 				#say $_;
 				my $regex = ($after && $word-beg ?? "<?after ^ {S:g/<[()]>// given $after}>" !!
 							('^' if $word-beg) ~
@@ -365,7 +352,6 @@ class Actions {
 				#dd $regex;
 
 				#say $string ~~ m:g/<$regex>/;
-				my sub dest($/) { my $to = EVAL($destination); return $to }
 				#dd $string;
 				#say $_,  %ltrs{$_};
 				$string = $string.subst(/<$regex>/, %ltrs{$_}, :g) if %ltrs{$_};
@@ -385,7 +371,6 @@ class Actions {
 			#dd $regex;
 
 			#say $string ~~ m:g/<$regex>/;
-			my sub dest($/) { my $to = EVAL($dest); return $to }
 			#dd $string;
 			$string = $string.subst(/<$regex>/, $dest.contains('$')??&dest!!(S:g/<[()]>// given $dest), :g);
 		}

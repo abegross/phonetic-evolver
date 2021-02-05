@@ -108,26 +108,41 @@ use Terminal::ANSIColor;
 		["ŋ → g; n > [+stop]", "dãtʰag"],
 		#["[+aspirated] > z", "nãzaŋ"],
 		["[+nasal] > [+stop]", "dãtʰag"],
+		["[voiced] > [voiceless]", "n̥ãtʰaŋ̥"],
+		["[+nasal] > [+stop]; [voiced] > [voiceless]", "tãtʰak"],
 		["[+nasal] > [+stop] / _#", "nãtʰag"],
+		#["[-voiced] > [velar]", "nãkʰaŋ"],
 	];
 
 	my @tests4 = [
 		['CC > 2 1', "togpodr"],
+		['CC > @@', "topgpgordrd"],
 		['X₁ > @@', "topgordtopgord"],
-		## ask
-		##bye 
-		##baley
-		#'#CVC > @@', # balbaley
-		## mitigate
-		#'t > d / V1 _ V1', #midigate
+		['X > @@', "ttooppggoorrdd"],
+		['CVC > @@', "toptopgorgord"],
+	];
+	my @tests5 = [
+		# æftɚ
+		['f X > 2:F -', 'æθ̠tɚ'],
+	];
+	my @tests6 = [
+		# mitigate
+		#['t > d / V1 _ V1', 'midigate'],
 		##plato
 		#'∅ > C1 V1 / #_C1 C2 V1', # paplato
 	];
+	my @errors = [
+		['C > 1 / _ _ # ', 'topgord'],
+		['C > {b,m} / _ # ', 'topgord'],
+	];
 
-	#run-test("alabama", @tests1);
-	#run-test("topgord", @tests2);
+	run-test("alabama", @tests1);
+	run-test("topgord", @tests2);
 	run-test("nãtʰaŋ", @tests3);
 	run-test("topgord", @tests4);
+	#run-test("æftɚ", @tests5);
+	#run-test("mitigate", @tests5);
+	#run-test('topgord', @errors);
 
 	sub run-test($word, @tests) {
 		say "#####################################";

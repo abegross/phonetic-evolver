@@ -174,6 +174,20 @@ multi sub get-letters($str, $aspect) is export {
 	return @returns;
 }
 
+# figure out which letters in a str doesnt include a given aspect (including diacritics)
+sub get-letters-negative($str, $aspect) is export {
+	return vowels if $aspect eq 'consonants';
+	return consonants if $aspect eq 'vowels';
+	my @ltrs = |(@letters (-) get-letters($aspect)).keys;
+	my @matched = $str.split("",:skip-empty).map: {any(.NFKD.map: {.chr ∈ @ltrs})};
+	my @returns;
+	for $str.split("",:skip-empty) Z @matched -> [$letter, $match] {
+		@returns.push: $letter if $match;
+	}
+	return @returns;
+}
+#say get-letters-negative('nãtʰaŋ', 'voiced');
+
 #say switch-aspect("n", "plosive");
 
 # switch the aspect of a letter from one to another
@@ -321,10 +335,10 @@ sub clamp($value, $min, $max) {
 	#my $value = get-letter-by-aspects($v);
 	#say ($value eq @results1[$i]) ?? colored("OK","black on_green")~" $v → $value" !! colored("NOT OK","white on_red")~" $v ≠ $value";
 #}
-#say "###########################";
 
-#my @tests5 = [<k glottal>, <p voiced>, <b fricative>, <k fricative>, <ʃ voiced>, <s plosive>, <t affricate>, <g affricate>, <ts velar>, <tʃ voiced>, <n plosive>, <ŋ plosive>];
-#my @results5 = <ʔ b β x ʒ t ts gɣ kx dʒ d g>;
+#say "###########################";
+#my @tests5 = [<k glottal>, <p voiced>, <b fricative>, <k fricative>, <ʃ voiced>, <s plosive>, <t affricate>, <g affricate>, <ts velar>, <tʃ voiced>, <n plosive>, <ŋ plosive>, <d voiceless>, <g voiceless>, <k voiced>, <n voiceless>];
+#my @results5 = <ʔ b β x ʒ t ts gɣ kx dʒ d g t k g n̥>;
 #for @tests5.kv -> $i,$v {
 	##say "";
 	#my $value = switch-aspect($v[0], $v[1]);

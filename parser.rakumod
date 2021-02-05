@@ -25,8 +25,6 @@ grammar Parser {
 			|| <no>
 			|| <letter>
 		]+
-
-
 	}
 
 	rule features {
@@ -73,10 +71,10 @@ grammar Parser {
 		'/' | 'when' | 'where'
 	}
 	token becomes {
-		'->' | '→' | '>' | 'becomes' | 'is' | '='
+		'->' | '=>' | '→' | '>' | 'becomes' | 'is' | '='
 	}
 	regex letter {
-		<['\h\w] - [\n_;]>+ [ <syllable> <[' \w] - [\n_;]>+ ]*
+		<['\w] - [\n_;]>+ [ <syllable> <[' \w] - [\n_;]>+ ]*
 	}
 	token geminate { 'ː' }
 	token word-break { '#' }
@@ -88,7 +86,7 @@ grammar Parser {
 	token syllable { '.' | '$' }
 	
 	token reference {
-		| [\d+ | <[αβγδεζηθικλμνξοπρςτυφχψω]> ] [ ':' [ <class> | <features> ] ]?
+		| [$<number>=\d+ #`(| <[αβγδεζηθικλμνξοπρςτυφχψω]>) ] [ ':' [ <class> | <features> ] ]?
 		| '@'
 	}
 
@@ -140,7 +138,8 @@ grammar Parser {
 			token group:sym<back> 	{ 'B' | "back" }
 			token group:sym<center> 	{ <sym> }
 			token group:sym<front> 	{ "E" | "front" }
-		token group:sym<round> 	{ <sym> }
+		token group:sym<rounded> 	{ <sym> }
+		token group:sym<unrounded> 	{ <sym> }
 		token group:sym<distributed> 	{ <sym> }
 		token group:sym<covered> 	{ <sym> }
 		token group:sym<glottal> 	{ "glottal" | "glott" }
@@ -157,7 +156,8 @@ grammar Parser {
 		token group:sym<ejective> 	{ <sym> }
 		token group:sym<tense> 	{ <sym> }
 		#source features
-		token group:sym<voice> 	{ <sym> }
+		token group:sym<voiced> 	{ <sym> }
+		token group:sym<voiceless> 	{ <sym> }
 		token group:sym<strident> 	{ <sym> }
 			#prosodic features
 			token group:sym<stress> 	{ <sym> }
