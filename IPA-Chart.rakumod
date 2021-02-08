@@ -320,7 +320,7 @@ sub move($letter, $dir where "close" | "open" | "front" | "back") is export {
 sub cut(@array, $item) {
 	return @array.splice(@array.first($item,:k), 1);
 }
-sub clamp($value, $min, $max) {
+sub clamp($value, $min, $max) is export {
 	my $new-value = $value;
 	$new-value = $min if $value < $min;
 	$new-value = $max if $value > $max;

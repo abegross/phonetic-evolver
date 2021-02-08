@@ -19,6 +19,9 @@ class Actions {
 	has $.word;
 	# a list of <references> that will get populated as the action class goes
 	has %!refs;
+	# all items in the from block
+	has $!i=0;
+	has %!from;
 
 	method TOP($/) {
 		#say $/;
@@ -62,7 +65,7 @@ class Actions {
 		if $<lhs><jump> && $<rhs><jump> {
 			$/.make: metathesis($!word, $<lhs><letter>, $<rhs><letter>, before=>%when{"before"}, after=>%when{"after"}, word-beg=>$<word-beg>, word-end=>$<word-end>);
 		} else {
-			$/.make: self.replace($!word, $<lhs>.made, $<rhs>.made, before=>%when{"before"}, after=>%when{"after"}, word-beg=>$<word-beg>, word-end=>$<word-end>);
+			$/.make: self.replace($!word, $<lhs>.made, $<rhs>.made, before=>%when{"before"}.split('', :skip-empty), after=>%when{"after"}.split('', :skip-empty), word-beg=>$<word-beg>, word-end=>$<word-end>);
 		}
 		#say "making $/";
 		$!word = $/.made if $/.made;
@@ -127,7 +130,9 @@ class Actions {
 	}
 	method braces($/) {
 		#$/.make: "(<["~$<side>».made.join.subst(/<[()]>/,'',:g)~"]>)";
-		$/.make: "<["~$<side>».made.join~"]>";
+		#$/.make: "<["~$<side>».made.join~"]>";
+		$/.make: $<side>».made;
+		%!from{++$!i} = 'braces' => $<side>».made;
 	}
 	method parenthesis($/) {
 		$/.make: "[" ~ $<side>».made.join ~"]?"
@@ -347,43 +352,76 @@ class Actions {
 	#}
 
 	# replace all occurrences conditionally
-	method replace(Str $str, $from, $to-temp, Str :$before="", Str :$after="", :$word-beg, :$word-end) {
+	method replace(Str $str, $from, $to-temp, :@before, :@after, :$word-beg, :$word-end) {
 		my $to = S:g/<[()]>// given $to-temp||"";
 		#my $string = $str;
-		dds [$str, $from, $to, $after, $before, $word-beg, $word-end];
+		#dds [$str, $from, $to, $after, $before, $word-beg, $word-end];
 
 		my $result = '';
 		my @letters = |$str.split('',:skip-empty);
-		my @after = $after.split('', :skip-empty);
+		#my @after = $after.split('', :skip-empty);
 		my @from = $from.split('', :skip-empty);
-		my @before = $before.split('', :skip-empty);
-		for @letters.kv -> $k,$ltr {
-			my $letter = $ltr;
+		#my @before = $before.split('', :skip-empty);
+		dds [@letters, %!from, @from, $to, @after, @before];
+		my Int ($start, $end) = (0,0);
+		my $i = 0;
+		my $add = 0;
+		# loop through all characters in the string
+		while $i < @letters.elems {
+			says $i;
+			$add = 0;
+			my $letter;
 			# for each letter that we need to match…
-			my $i = $k;
-			for @from.kv -> $j,$f {
-				if ($word-beg ?? ($j == 0 and $i==0) !! False) or
-				   ($word-end ?? ($j == @from.elems-1 and $i==@letters.elems-1) !! False)
-				{
-					#says $f;
-					last if $f ne $letter;
-					if $f eq $letter {
-						# check if '$before' and '$after' match correctly
-						if @letters[($i-@after.elems>0??$i-@after.elems!!0)..$i-1] ≡ @after and
-						   @letters[$i+1..($i+@before.elems < @letters.elems??$i+@before.elems!!$i+1)] ≡ @before
-						{
-							says 'equal';
-							$letter = $to;
-							says $letter;
+			#my $i = $k;
+
+			if ($word-beg ?? ($i-@after.elems==0) !! True) and
+			   ($word-end ?? ($i==@letters.elems-@before.elems-1) !! True)
+			{
+				for %!from.kv -> $k, $v {
+					says $k, $v;
+					for $v.kv -> $kk, $vv {
+						if $kk eq 'braces' {
+							for $vv.values -> $ltr {
+								says $ltr, ' ', @letters[$i];
+								if $ltr eq @letters[$i] {
+									says @letters[($i-@after.elems>0??$i-@after.elems!!0)..$i-1];
+									says @letters[$i+1..($i+@before.elems < @letters.elems??$i+@before.elems!!$i+1)];
+									if @letters[($i-@after.elems>0??$i-@after.elems!!0)..$i-1] ≡ @after and
+									   @letters[$i+1..($i+@before.elems < @letters.elems??$i+@before.elems!!$i+1)] ≡ @before 
+									{
+										$letter = $to;
+									}
+								}
+							}
+						# if all else fails then its a regular old plain letter than just 
+						# needs to get changed without doing anything fancy
+						} else {
+							#for @from.kv -> $j,$f {
+								#says $i, $j ;
+								#says $f;
+								#if $f ne @letters[$i+$j] { last }
+								#if $f eq @letters[$i+$j] {
+									## check if '$before' and '$after' match correctly
+									#if @letters[($i-@after.elems>0??$i-@after.elems!!0)..$i-1] ≡ @after and
+									   #@letters[$i+1..($i+@before.elems < @letters.elems??$i+@before.elems!!$i+1)] ≡ @before {
+										#says 'equal';
+										#$letter = $to;
+										#$add = @from.elems;
+										#says $letter;
+									#}
+								##$letter = $to if $f eq $letter;
+								#}
+							#}
 						}
-					#$letter = $to if $f eq $letter;
 					}
-					#
-					++$i;
 				}
 			}
-			$result ~= $letter;
+
+			says $letter ?? 'yes' !! 'no';
+			$result ~= $letter||@letters[clamp($i, 0, @letters.elems-1)].join;
+			$i += $add==0??1!!$add;
 			says $result;
+			#last if $i == @letters.elems;
 
 			#for @before -> $b {
 				#says $b;
