@@ -80,7 +80,7 @@ grammar Parser {
 	token word-break { '#' }
 	token no { '!' | 'not' }
 	token jump { '…' | '...' }
-	token placeholder { '_'+ | '*'|'–'|'—' }
+	token placeholder { '_'+ | '–'|'—' }
 	token empty { '∅' | 'silent' }
 	token number { \d+ }
 	token syllable { '.' | '$' }
@@ -90,13 +90,13 @@ grammar Parser {
 		| '@'
 	}
 
-	token class {
-		<sign>? <group> <number>? [ <superscript>? <subscript> | <subscript> <superscript>? ]?
+	rule class {
+		$<class>=(<sign>? <group> <number>?)+ [ <superscript>? <subscript> | <subscript> <superscript>? ]?
 	}
 	token subscript   { <[₀₁₂₃₄₅₆₇₈₉]>+ }
 	token superscript { <[⁰¹²³⁴⁵⁶⁷⁸⁹]>+ }
 	proto token group {*}
-		token group:sym<X> 	{ <sym> } # stands for literally anything
+		token group:sym<X> 	{ 'X'|'*' } # stands for literally anything
 		token group:sym<consonants> 	{ 'C' | 'consonant' }
 		token group:sym<vowels> 		{ 'V' | 'vowel' }
 		token group:sym<syllable> 		{ 'S' | 'syllable' }
@@ -156,7 +156,7 @@ grammar Parser {
 		token group:sym<ejective> 	{ <sym> }
 		token group:sym<tense> 	{ <sym> }
 		#source features
-		token group:sym<voiced> 	{ <sym> }
+		token group:sym<voiced> 	{ 'voiced' | 'voice' }
 		token group:sym<voiceless> 	{ <sym> }
 		token group:sym<strident> 	{ <sym> }
 			#prosodic features

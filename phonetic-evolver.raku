@@ -45,35 +45,35 @@ use Terminal::ANSIColor;
 		["a > e / #_", "elabama"],
 		["a > e / #_;l→m;", "emabama"],
 		["l > e / #a _", "aeabama"],
-		["l > e / #_ a", "alabama"],
-		["a > g / c _#", "alabama"],
-		["a > g / _#", "alabamg"],
-		["ba > ab ", "alaabma"],
-		['{b,m} > p', "alapapa"],
-		['a > e / _{b,m}', "alebema"],
-		['V > e', "elebeme"],
-		['C > z', "azazaza"],
-		['V > e / C _', "alebeme"],
-		['V > e / C _ m', "alabema"],
-		["ba -> gz / la _", "alagzma"],
-		["ba -> gz / #ala _", "alagzma"],
-		["ba -> gz / #al _", "alabama"],
-		["l…b → b…l ", "abalama"],
-		["l…b → b…l / a ___ ", "abalama"],
-		["l…b → z…q ", "azaqama"],
-		["l…b → b...l / _a ", "abalama"],
-		["l…b → b...l / _b ", "alabama"],
-		["al…am → am…ab / #_", "amababa"],
-		["l…b → b...l / _ma ", "alabama"],
-		["l…a → z…q ", "azabqma"],
-		["a…m → z…q", "alzbaqa"],
-		["a…m → z…q / #_", "zlabaqa"],
-		["a…b → z…q / #_ ", "zlaqama"],
-		["a…b → z…q / #_ ; qa -> bz/_z", "zlaqama"],
-		["a…b → z…q / #_ ; qa -> bz/_ma#", "zlabzma"],
-		["a…m → z…q / #_ ; ba -> gz / #zla _", "zlagzqa"],
-		['C > ∅', "aaaa"],
-		['a→z/{l,m} _;C>∅/a _', "azbaz"],
+		#["l > e / #_ a", "alabama"],
+		#["a > g / c _#", "alabama"],
+		#["a > g / _#", "alabamg"],
+		#["ba > ab ", "alaabma"],
+		#['{b,m} > p', "alapapa"],
+		#['a > e / _{b,m}', "alebema"],
+		#['V > e', "elebeme"],
+		#['C > z', "azazaza"],
+		#['V > e / C _', "alebeme"],
+		#['V > e / C _ m', "alabema"],
+		#["ba -> gz / la _", "alagzma"],
+		#["ba -> gz / #ala _", "alagzma"],
+		#["ba -> gz / #al _", "alabama"],
+		#["l…b → b…l ", "abalama"],
+		#["l…b → b…l / a ___ ", "abalama"],
+		#["l…b → z…q ", "azaqama"],
+		#["l…b → b...l / _a ", "abalama"],
+		#["l…b → b...l / _b ", "alabama"],
+		#["al…am → am…ab / #_", "amababa"],
+		#["l…b → b...l / _ma ", "alabama"],
+		#["l…a → z…q ", "azabqma"],
+		#["a…m → z…q", "alzbaqa"],
+		#["a…m → z…q / #_", "zlabaqa"],
+		#["a…b → z…q / #_ ", "zlaqama"],
+		#["a…b → z…q / #_ ; qa -> bz/_z", "zlaqama"],
+		#["a…b → z…q / #_ ; qa -> bz/_ma#", "zlabzma"],
+		#["a…m → z…q / #_ ; ba -> gz / #zla _", "zlagzqa"],
+		#['C > ∅', "aaaa"],
+		#['a→z/{l,m} _;C>∅/a _', "azbaz"],
 	];
 
 	my @tests2 = [
@@ -106,12 +106,13 @@ use Terminal::ANSIColor;
 		["[+stop] > z", "nãzʰaŋ"],
 		["n > [+stop]", "dãtʰaŋ"],
 		["ŋ → g; n > [+stop]", "dãtʰag"],
-		#["[+aspirated] > z", "nãzaŋ"],
 		["[+nasal] > [+stop]", "dãtʰag"],
 		["[voiced] > [voiceless]", "n̥ãtʰaŋ̥"],
 		["[+nasal] > [+stop]; [voiced] > [voiceless]", "tãtʰak"],
 		["[+nasal] > [+stop] / _#", "nãtʰag"],
-		#["[-voiced] > [velar]", "nãkʰaŋ"],
+		["[-voiced] > [velar]", "nãkʰaŋ"],
+		["[+aspirated] > z", "nãzaŋ"],
+		["[-cont -nasal] > [+voice] / [vowel] _ [+vowel]", "nãdʰaŋ"],
 	];
 
 	my @tests4 = [
@@ -121,15 +122,19 @@ use Terminal::ANSIColor;
 		['X > @@', "ttooppggoorrdd"],
 		['CVC > @@', "toptopgorgord"],
 	];
+
 	my @tests5 = [
 		# æftɚ
-		['f X > 2:F -', 'æθ̠tɚ'],
+		['f * > 2:F', 'æθ̠tɚ'],
 	];
+
 	my @tests6 = [
 		# mitigate
-		#['t > d / V1 _ V1', 'midigate'],
-		##plato
-		#'∅ > C1 V1 / #_C1 C2 V1', # paplato
+		['t > d / V1 _ V1', 'midigate'],
+		['∅ > C1 V1 / #_ C1 V1', 'mimitigate'],
+		['∅ > V1 C1 / #_ C1 V1', 'immitigate'],
+		['∅ > C1 C2 / _ C1 V2 C2 V1', 'mtmitigtgate'],
+		["[+stop] > [+nasal] / V1 _ V1", "dãtʰag"],
 	];
 	my @errors = [
 		['C > 1 / _ _ # ', 'topgord'],
@@ -137,11 +142,11 @@ use Terminal::ANSIColor;
 	];
 
 	run-test("alabama", @tests1);
-	run-test("topgord", @tests2);
-	run-test("nãtʰaŋ", @tests3);
-	run-test("topgord", @tests4);
+	#run-test("topgord", @tests2);
+	#run-test("nãtʰaŋ", @tests3);
+	#run-test("topgord", @tests4);
 	#run-test("æftɚ", @tests5);
-	#run-test("mitigate", @tests5);
+	#run-test("mitigate", @tests6);
 	#run-test('topgord', @errors);
 
 	sub run-test($word, @tests) {
